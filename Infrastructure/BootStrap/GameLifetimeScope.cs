@@ -26,9 +26,6 @@ namespace Codebase.Infrastructure
             builder
                 .RegisterEntryPoint<Bootstrap>(Lifetime.Singleton)
                 .AsSelf();
-            builder
-                .RegisterEntryPoint<EnemyManager>(Lifetime.Singleton)
-                .AsSelf();
 
             builder
                 .RegisterInstance(_sceneData);
@@ -38,7 +35,12 @@ namespace Codebase.Infrastructure
                 .RegisterInstance(_gameConfig.EnemyConfig);
             builder
                 .RegisterInstance(_gameConfig.ProjectileConfig);
-
+            builder
+                .RegisterInstance(_gameConfig.SpawnConfig);
+            
+            builder
+                .Register<EnemyManager>(Lifetime.Singleton)
+                .AsImplementedInterfaces();
             builder
                 .Register<GameFactory>(Lifetime.Singleton)
                 .AsImplementedInterfaces();
@@ -54,7 +56,6 @@ namespace Codebase.Infrastructure
             builder
                 .Register<RandomService>(Lifetime.Singleton)
                 .AsImplementedInterfaces();
-
             builder
                 .Register<GameStateMachine>(Lifetime.Singleton)
                 .AsSelf();

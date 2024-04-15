@@ -19,6 +19,7 @@ namespace Codebase.Infrastructure
         public void Enter()
         {
             Player player = _gameFactory.CreatePlayer();
+            _stateMachine.Enter<GameLoopState>();
         }
 
         public void Exit()
