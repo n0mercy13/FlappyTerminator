@@ -2,7 +2,8 @@
 
 namespace Codebase.Logic
 {
-    public class Player : MonoBehaviour
+    public class EnemyMover : MonoBehaviour
     {
+
     }
 }

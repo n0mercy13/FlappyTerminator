@@ -31,6 +31,8 @@ namespace Codebase.Infrastructure
             builder 
                 .RegisterInstance(_gameConfig.PlayerConfig);
             builder
+                .RegisterInstance(_gameConfig.EnemyConfig);
+            builder
                 .RegisterInstance(_gameConfig.ProjectileConfig);
 
             builder
