@@ -45,7 +45,7 @@ namespace Codebase.Logic
     {
         public void ApplyDamage(int amount)
         {
-            _energy.Increase(amount);
+            _energy.Decrease(amount);
         }
     }
 }

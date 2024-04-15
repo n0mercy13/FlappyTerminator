@@ -6,8 +6,8 @@ namespace Codebase.Infrastructure
     public partial class BoundaryService
     {
         private readonly Camera _camera;
-        private readonly Vector2 _topRightCorner = new(1, 1);
-        private readonly Vector2 _bottomRightCorner = new(1, 0);
+        private readonly Vector2 _topRightCorner = new(1f, 0.9f);
+        private readonly Vector2 _bottomRightCorner = new(1f, 0.1f);
 
         public BoundaryService(SceneData sceneData)
         {

@@ -15,7 +15,7 @@ namespace Codebase.Logic
 
         [Inject]
         private void Construct(ProjectileConfig config)
-        {
+        { 
             _speed = config.Speed;
             _damage = config.Damage;
         }
@@ -26,9 +26,9 @@ namespace Codebase.Logic
                 throw new ArgumentNullException(nameof(_rigidbody));
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)
-         {
-            if (collision.TryGetComponent(out IDamageable damageable))
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (collision.gameObject.TryGetComponent(out IDamageable damageable))
                 TargetHit(damageable);
         }
 
