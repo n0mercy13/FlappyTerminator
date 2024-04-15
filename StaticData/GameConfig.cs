@@ -1,0 +1,18 @@
+﻿using System;
+using UnityEngine;
+
+namespace Codebase.StaticData
+{
+    [CreateAssetMenu(fileName = "GameConfig", menuName = "StaticData/GameConfig")]
+    public class GameConfig : ScriptableObject
+    {
+        [field: SerializeField] public PlayerConfig PlayerConfig { get; private set; }
+        [field: SerializeField] public ProjectileConfig ProjectileConfig { get; private set; }
+
+        private void OnValidate()
+        {
+            if (PlayerConfig == null)
+                throw new ArgumentNullException(nameof(PlayerConfig));
+        }
+    }
+}
