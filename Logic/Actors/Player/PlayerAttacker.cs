@@ -4,30 +4,23 @@ using Codebase.Infrastructure;
 
 namespace Codebase.Logic
 {
-    public class PlayerAttacker : MonoBehaviour
+    public partial class PlayerAttacker : MonoBehaviour
     {
         [SerializeField] private Transform _shootingPoint;
 
         private IGameplayInput _input;
-        private IGameFactory _gameFactory;
+        private IGamePool _gamePool;
         private Projectile _projectile;
         private bool _canShoot;
 
         private Vector2 _shootDirection => transform.right;
 
         [Inject]
-        private void Constructor(IGameplayInput input, IGameFactory gameFactory)
+        private void Constructor(IGameplayInput input, IGamePool gamePool)
         {
             _input = input;
-            _gameFactory = gameFactory;
-            _canShoot = true;
+            _gamePool = gamePool;
 
-            _input.FirePressed += OnFirePressed;
-        }
-
-        private void OnDestroy()
-        {
-            _input.FirePressed -= OnFirePressed;
         }
 
         private void OnFirePressed()
@@ -38,8 +31,24 @@ namespace Codebase.Logic
 
         private void Shoot()
         {
-            _projectile = _gameFactory.CreateProjectile(_shootingPoint.position);
+            _projectile = _gamePool.Get<Projectile>(_shootingPoint.position);
             _projectile.Shoot(_shootDirection);
+        }
+    }
+
+    public partial class PlayerAttacker : IPoolItem
+    {
+        public void Activate(Vector2 _)
+        {
+            _canShoot = true;
+            _input.FirePressed += OnFirePressed;
+
+        }
+
+        public void Deactivate()
+        {
+            _canShoot = false;
+            _input.FirePressed -= OnFirePressed;
         }
     }
 }

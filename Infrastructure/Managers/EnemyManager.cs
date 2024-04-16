@@ -2,12 +2,13 @@
 using System.Collections;
 using UnityEngine;
 using Codebase.StaticData;
+using Codebase.Logic;
 
 namespace Codebase.Infrastructure
 {
     public partial class EnemyManager
     {
-        private readonly IGameFactory _gameFactory;
+        private readonly IGamePool _gamePool;
         private readonly IBoundaryService _boundaryService;
         private readonly IRandomService _randomService;
         private readonly CoroutineRunner _runner;
@@ -15,14 +16,14 @@ namespace Codebase.Infrastructure
         private Coroutine _spawnEnemiesCoroutine;
 
         public EnemyManager(
-            IGameFactory gameFactory,
+            IGamePool gameFactory,
             IBoundaryService boundaryService,
             IRandomService randomService,
             SceneData sceneData,
             SpawnConfig config
             )
         {
-            _gameFactory = gameFactory;
+            _gamePool = gameFactory;
             _boundaryService = boundaryService;
             _randomService = randomService;
             _runner = sceneData.CoroutineRunner;
@@ -36,7 +37,7 @@ namespace Codebase.Infrastructure
             while (true)
             {
                 spawnPosition = GetSpawnPosition();
-                _gameFactory.CreateEnemy(spawnPosition);
+                _gamePool.Get<Enemy>(spawnPosition);
 
                 yield return _spawnDelay;
             }

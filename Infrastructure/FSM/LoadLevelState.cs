@@ -1,16 +1,20 @@
-﻿using Codebase.Logic;
+﻿using UnityEngine;
+using Codebase.Logic;
+using Codebase.StaticData;
 
 namespace Codebase.Infrastructure
 {
     public partial class LoadLevelState
     {
         private readonly GameStateMachine _stateMachine;
-        private readonly IGameFactory _gameFactory;
+        private readonly IGamePool _gamePool;
+        private readonly Vector3 _playerInitialPosition;
 
-        public LoadLevelState(GameStateMachine stateMachine, IGameFactory gameFactory)
+        public LoadLevelState(GameStateMachine stateMachine, IGamePool gamePool, SceneData data)
         {
             _stateMachine = stateMachine;
-            _gameFactory = gameFactory;
+            _gamePool = gamePool;
+            _playerInitialPosition = data.PlayerMarker.position;
         }
     }
 
@@ -18,7 +22,11 @@ namespace Codebase.Infrastructure
     {
         public void Enter()
         {
-            Player player = _gameFactory.CreatePlayer();
+            if(_gamePool is IInitializable initializable)
+                initializable.Initialize();
+
+            _gamePool.Get<Player>(_playerInitialPosition);
+
             _stateMachine.Enter<GameLoopState>();
         }
 

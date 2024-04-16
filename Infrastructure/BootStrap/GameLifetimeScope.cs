@@ -44,6 +44,9 @@ namespace Codebase.Infrastructure
             builder
                 .Register<GameFactory>(Lifetime.Singleton)
                 .AsImplementedInterfaces();
+            builder 
+                .Register<GamePool>(Lifetime.Singleton)
+                .AsImplementedInterfaces();
             builder
                 .Register<InputControls>(Lifetime.Singleton)
                 .AsSelf();

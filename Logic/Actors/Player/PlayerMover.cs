@@ -7,7 +7,7 @@ using System.Collections;
 
 namespace Codebase.Logic
 {
-    public class PlayerMover : MonoBehaviour
+    public partial class PlayerMover : MonoBehaviour
     {
         [SerializeField] private Rigidbody2D _rigidbody;
 
@@ -42,27 +42,9 @@ namespace Codebase.Logic
             _gravityVelocity = config.GravityVelocity;
             _boostDuration = new WaitForSeconds(config.BoostDuration);
             _boostDelay = new WaitForSeconds(config.BoostDelay);
-            _canBoost = true;
-            _isBoostActive = false;
-
-            _gameplayInput.BoostPressed += OnBoostPressed;
         }
 
-        private void Start()
-        {
-            StartGravity();
-        }
-
-        private void OnDestroy()
-        {
-            StopBoost();
-            StopGravity();
-
-            if (_boostRechargeCoroutine != null)
-                StopCoroutine(_boostRechargeCoroutine);
-
-            _gameplayInput.BoostPressed -= OnBoostPressed;
-        }
+        private void OnDisable() => Deactivate();
 
         private void OnBoostPressed()
         {
@@ -92,6 +74,15 @@ namespace Codebase.Logic
                 StopCoroutine(_boostDeactivationCoroutine);
         }
 
+        private void StartGravity() =>
+           _gravityCoroutine = StartCoroutine(ApplyGravityAsync());
+
+        private void StopGravity()
+        {
+            if (_gravityCoroutine != null)
+                StopCoroutine(_gravityCoroutine);
+        }
+
         private IEnumerator BoostAsync()
         {
             while (_isBoostActive)
@@ -117,15 +108,6 @@ namespace Codebase.Logic
             BoostCompleted.Invoke();
         }
 
-        private void StartGravity() => 
-            _gravityCoroutine = StartCoroutine(ApplyGravityAsync());
-
-        private void StopGravity()
-        {
-            if (_gravityCoroutine != null)
-                StopCoroutine(_gravityCoroutine);
-        }
-
         private IEnumerator ApplyGravityAsync()
         {
             while(enabled)
@@ -134,6 +116,29 @@ namespace Codebase.Logic
 
                 yield return null;
             }
+        }
+    }
+
+    public partial class PlayerMover : IPoolItem
+    {
+        public void Activate(Vector2 _)
+        {
+            _canBoost = true;
+            _isBoostActive = false;
+            StartGravity();
+
+            _gameplayInput.BoostPressed += OnBoostPressed;
+        }
+
+        public void Deactivate()
+        {
+            StopBoost();
+            StopGravity();
+
+            if (_boostRechargeCoroutine != null)
+                StopCoroutine(_boostRechargeCoroutine);
+
+            _gameplayInput.BoostPressed -= OnBoostPressed;
         }
     }
 }

@@ -2,33 +2,32 @@
 using UnityEngine;
 using VContainer;
 using Codebase.StaticData;
+using Codebase.Infrastructure;
 
 namespace Codebase.Logic
 {
     public class Enemy : Actor
     {
-        [SerializeField] private EnemyMover _mover;
+        private IGamePool _gamePool;
 
         [Inject]
-        private void Construct(EnemyConfig config)
+        private void Construct(IGamePool gamePool, EnemyConfig config)
         {
-            SetMaxHealth(config.MaxHealth);
+            _gamePool = gamePool;
+            MaxEnergy = config.MaxEnergy;
         }
 
-        private void OnValidate()
+        public override void Activate(Vector2 position)
         {
-            if(_mover == null)
-                throw new ArgumentNullException(nameof(_mover));
+            base.Activate(position);
+
+            SetMaxEnergy(MaxEnergy);
         }
 
-        private void Start()
+        public override void Deactivate()
         {
-            _mover.Activate();
-        }
-
-        protected override void OnEnergyDepleted()
-        {
-            Destroy(gameObject);
+            base.Deactivate();
+            _gamePool.Put<Enemy>(this);
         }
     }
 }

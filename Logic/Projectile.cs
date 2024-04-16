@@ -2,20 +2,23 @@
 using UnityEngine;
 using VContainer;
 using Codebase.StaticData;
+using Codebase.Infrastructure;
 
 namespace Codebase.Logic
 {
     [RequireComponent(typeof(Collider2D))]
-    public class Projectile : MonoBehaviour
+    public partial class Projectile : MonoBehaviour
     {
         [SerializeField] private Rigidbody2D _rigidbody;
 
+        private IGamePool _gamePool;
         private float _speed;
         private int _damage;
 
         [Inject]
-        private void Construct(ProjectileConfig config)
+        private void Construct(IGamePool gamePool, ProjectileConfig config)
         { 
+            _gamePool = gamePool;
             _speed = config.Speed;
             _damage = config.Damage;
         }
@@ -41,8 +44,23 @@ namespace Codebase.Logic
         private void TargetHit(IDamageable damageable)
         {
             damageable.ApplyDamage(_damage);
+            Deactivate();
+        }
+    }
+
+    public partial class Projectile : IPoolItem
+    {
+        public void Activate(Vector2 position)
+        {
+            transform.position = position;
+            gameObject.SetActive(true);
+        }
+
+        public void Deactivate()
+        {
             _rigidbody.velocity = Vector2.zero;
-            Destroy(gameObject);
+            gameObject.SetActive(false);
+            _gamePool.Put<Projectile>(this);
         }
     }
 }

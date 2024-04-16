@@ -2,23 +2,32 @@
 using UnityEngine;
 using VContainer;
 using Codebase.StaticData;
+using Codebase.Infrastructure;
 
 namespace Codebase.Logic
 {
     public class Player : Actor
     {
-        public event Action Dead = delegate { };
+        private IGamePool _gamePool;
 
         [Inject]
-        private void Construct(PlayerConfig config)
+        private void Construct(IGamePool gamePool, PlayerConfig config)
         {
-            SetMaxHealth(config.MaxHealth);
+            _gamePool = gamePool;
+            MaxEnergy = config.MaxEnergy;
         }
 
-        protected override void OnEnergyDepleted()
+        public override void Activate(Vector2 position)
         {
-            Dead.Invoke();
-            Destroy(gameObject);
+            base.Activate(position);
+
+            SetMaxEnergy(MaxEnergy);
+        }
+
+        public override void Deactivate()
+        {
+            _gamePool.Put<Player>(this);
+            base.Deactivate();
         }
     }
 }
