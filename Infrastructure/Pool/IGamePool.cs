@@ -6,7 +6,5 @@ namespace Codebase.Infrastructure
     {
         TObject Get<TObject>() 
             where TObject : MonoBehaviour, IPoolable;
-        void Put<TObject>(IPoolable item) 
-            where TObject : MonoBehaviour, IPoolable;
     }
 }

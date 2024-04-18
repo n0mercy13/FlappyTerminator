@@ -27,7 +27,7 @@ namespace Codebase.Infrastructure
         public void Enter()
         {
             foreach (IManager manager in _managers)
-                manager.Start();
+                manager.StartGameLoop();
 
             _playerManager.Dead += OnPlayerDead;
         }
@@ -35,7 +35,7 @@ namespace Codebase.Infrastructure
         public void Exit()
         {
             foreach(IManager manager in _managers)
-                manager.Stop();
+                manager.StopGameLoop();
 
             _playerManager.Dead -= OnPlayerDead;
         }

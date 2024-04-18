@@ -20,7 +20,9 @@ namespace Codebase.Infrastructure
         private void OnContinuePerformed(InputAction.CallbackContext context)
         {
             if (context.phase.Equals(InputActionPhase.Performed))
+            {
                 ContinuePressed.Invoke();
+            }
         }
 
         private void OnBoostPerformed(InputAction.CallbackContext context)

@@ -24,6 +24,7 @@ namespace Codebase.Logic
         private float _gravityVelocity;
         private bool _canBoost;
         private bool _isBoostActive;
+        private bool _isInitialized;
 
         public event Action Boosted = delegate { };
         public event Action BoostCompleted = delegate { };
@@ -42,15 +43,13 @@ namespace Codebase.Logic
             _gravityVelocity = config.GravityVelocity;
             _boostDuration = new WaitForSeconds(config.BoostDuration);
             _boostDelay = new WaitForSeconds(config.BoostDelay);
+            _isInitialized = true;
         }
 
         private void OnEnable()
         {
-            _canBoost = true;
-            _isBoostActive = false;
-            StartGravity();
-
-            _gameplayInput.BoostPressed += OnBoostPressed;
+            if(_isInitialized)
+                SetUp();
         }
 
         private void OnDisable()
@@ -62,6 +61,15 @@ namespace Codebase.Logic
                 StopCoroutine(_boostRechargeCoroutine);
 
             _gameplayInput.BoostPressed -= OnBoostPressed;
+        }
+
+        private void SetUp()
+        {
+            _canBoost = true;
+            _isBoostActive = false;
+            StartGravity();
+
+            _gameplayInput.BoostPressed += OnBoostPressed;
         }
 
         private void OnBoostPressed()

@@ -15,6 +15,9 @@ namespace Codebase.Logic
         private void Awake()
         {
             _energy = new Energy();
+
+            _energy.Depleted += OnEnergyDepleted;
+            _energy.Changed += OnEnergyChanged;
         }
 
         private void OnEnable()
@@ -38,6 +41,7 @@ namespace Codebase.Logic
         private void OnEnergyDepleted()
         {
             EnergyDepleted.Invoke();
+            Deactivate();
         }
 
         private void OnEnergyChanged(int energy, int maxEnergy) =>
@@ -59,6 +63,7 @@ namespace Codebase.Logic
             gameObject.SetActive(true);
         }
 
-        public virtual void Deactivate() => gameObject.SetActive(false);
+        public virtual void Deactivate() => 
+            gameObject.SetActive(false);
     }
 }

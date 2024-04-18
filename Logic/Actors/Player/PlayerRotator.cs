@@ -15,6 +15,7 @@ namespace Codebase.Logic
         private Quaternion _lowerLimit;
         private float _rotationSpeedOnBoost;
         private float _rotationSpeedWithoutBoost;
+        private bool _isInitialized;
 
         private Quaternion _currentRotation => _rigidBody.transform.rotation;
 
@@ -25,6 +26,7 @@ namespace Codebase.Logic
             _lowerLimit = Quaternion.Euler(0f, 0f, config.AngleZLowerLimit);
             _rotationSpeedOnBoost = config.RotationSpeedOnBoost;
             _rotationSpeedWithoutBoost = config.RotationSpeedWithoutBoost;
+            _isInitialized = true;
         }
 
         private void OnValidate()
@@ -38,8 +40,8 @@ namespace Codebase.Logic
 
         private void OnEnable()
         {
-            _mover.Boosted += OnBoost;
-            _mover.BoostCompleted += OnBoostCompleted;
+            if(_isInitialized)
+                SetUp();
         }
 
         private void OnDisable()
@@ -48,6 +50,12 @@ namespace Codebase.Logic
 
             _mover.Boosted -= OnBoost;
             _mover.BoostCompleted -= OnBoostCompleted;
+        }
+
+        private void SetUp()
+        {
+            _mover.Boosted += OnBoost;
+            _mover.BoostCompleted += OnBoostCompleted;
         }
 
         private void OnBoost()

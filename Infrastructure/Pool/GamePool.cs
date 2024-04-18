@@ -7,7 +7,7 @@ namespace Codebase.Infrastructure
 {
     public partial class GamePool
     {
-        private readonly Dictionary<Type, Stack<IPoolable>> _pools;
+        private readonly Dictionary<Type, List<IPoolable>> _pools;
         private readonly IGameFactory _gameFactory;
         private readonly int _initialProjectiles = 30;
         private readonly int _initialEnemies = 10;
@@ -15,22 +15,39 @@ namespace Codebase.Infrastructure
 
         public GamePool(IGameFactory gameFactory)
         {
-            _pools = new Dictionary<Type, Stack<IPoolable>>();
+            _pools = new Dictionary<Type, List<IPoolable>>();
             _gameFactory = gameFactory;
         }
 
-        private void Create<TObject>(int initialObjects) where TObject : MonoBehaviour, IPoolable
+        private IPoolable GetPoolable<TObject>(List<IPoolable> pool) where TObject : MonoBehaviour, IPoolable
         {
-            Stack<IPoolable> pool = new(initialObjects);
-
-            for (int i = 0; i < initialObjects; i++)
+            foreach (IPoolable poolable in pool)
             {
-                IPoolable poolable = _gameFactory.Create<TObject>();
-                poolable.Deactivate();
-                pool.Push(poolable);
+                if(poolable.IsActive() == false)
+                    return poolable;
             }
 
+            IPoolable newPoolable = CreatePoolable<TObject>(pool);
+            return newPoolable;
+        }
+
+        private void CreatePool<TObject>(int initialObjects) where TObject : MonoBehaviour, IPoolable
+        {
+            List<IPoolable> pool = new(initialObjects);
+
+            for (int i = 0; i < initialObjects; i++)
+                CreatePoolable<TObject>(pool);
+
             _pools.Add(typeof(TObject), pool);
+        }
+
+        private IPoolable CreatePoolable<TObject>(List<IPoolable> pool) where TObject : MonoBehaviour, IPoolable
+        {
+            IPoolable poolable = _gameFactory.Create<TObject>();
+            poolable.Deactivate();
+            pool.Add(poolable);
+
+            return poolable;
         }
     }
 
@@ -38,38 +55,16 @@ namespace Codebase.Infrastructure
     {
         public TObject Get<TObject>() where TObject : MonoBehaviour, IPoolable
         {
-            if (_pools.TryGetValue(typeof(TObject), out Stack<IPoolable> items) == false)
-            {
+            if (_pools.TryGetValue(typeof(TObject), out List<IPoolable> pool) == false)
                 throw new ArgumentOutOfRangeException(
                     $"Cannot find item type: {typeof(TObject)} it the pool");
-            }
 
-            if (items.TryPop(out IPoolable item) == false)
-            {
-                item = _gameFactory.Create<TObject>();
-            }
+            IPoolable poolable = GetPoolable<TObject>(pool);
 
-            if(item is TObject poolable)
-            {
-                return poolable;
-            }
+            if(poolable is TObject poolObject)
+                return poolObject;
             else
-            {
                 throw new InvalidOperationException(nameof(poolable));
-            }
-        }
-
-        public void Put<TObject>(IPoolable item) where TObject : MonoBehaviour, IPoolable
-        {
-            if (_pools.TryGetValue(typeof(TObject), out Stack<IPoolable> items))
-            {
-                items.Push(item);
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(
-                    $"Cannot find item type: {typeof(TObject)} it the pool");
-            }
         }
     }
 
@@ -77,9 +72,9 @@ namespace Codebase.Infrastructure
     {
         public void Initialize()
         {
-            Create<Player>(_initialPlayers);
-            Create<Enemy>(_initialEnemies);
-            Create<Projectile>(_initialProjectiles);
+            CreatePool<Player>(_initialPlayers);
+            CreatePool<Enemy>(_initialEnemies);
+            CreatePool<Projectile>(_initialProjectiles);
         }
     }
 
@@ -87,9 +82,14 @@ namespace Codebase.Infrastructure
     {
         public void Reset()
         {
-            foreach(Stack<IPoolable> pool in _pools.Values)
-                foreach(IPoolable poolable in pool)
-                    poolable.Deactivate();
+            foreach(List<IPoolable> pool in _pools.Values)
+            {
+                foreach (IPoolable poolable in pool)
+                {
+                    if(poolable.IsActive())
+                        poolable.Deactivate();
+                }
+            }
         }
     }
 }

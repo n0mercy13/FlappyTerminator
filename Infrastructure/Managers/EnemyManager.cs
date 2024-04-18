@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using Codebase.StaticData;
 using Codebase.Logic;
+using System.Collections.Generic;
 
 namespace Codebase.Infrastructure
 {
@@ -13,6 +14,7 @@ namespace Codebase.Infrastructure
         private readonly IRandomService _randomService;
         private readonly CoroutineRunner _runner;
         private readonly YieldInstruction _spawnDelay;
+        private readonly List<Enemy> _activeEnemies;
         private Coroutine _spawnEnemiesCoroutine;
         private readonly int _maxEnergy;
         private bool _isRunning;
@@ -29,6 +31,7 @@ namespace Codebase.Infrastructure
             _gamePool = gameFactory;
             _boundaryService = boundaryService;
             _randomService = randomService;
+            _activeEnemies = new List<Enemy>();
             _runner = sceneData.CoroutineRunner;
             _spawnDelay = new WaitForSeconds(spawnConfig.SpawnInterval);
             _maxEnergy = enemyConfig.MaxEnergy;
@@ -56,22 +59,28 @@ namespace Codebase.Infrastructure
             return _randomService.Range(point1, point2);
         }
 
-        private void OnPoolReady(IPoolable enemy)
-        {
-            Deactivate(enemy);
-            _gamePool.Put<Enemy>(enemy);
-            EnemyDefeated.Invoke();
-        }
-
         private void Activate(Enemy enemy,  Vector2 spawnPosition)
         {
             enemy.SetMaxEnergy(_maxEnergy);
             enemy.Activate(spawnPosition);
+
+            _activeEnemies.Add(enemy);
+            enemy.Defeated += OnEnemyDefeated;
         }
 
-        private void Deactivate(IPoolable enemy)
+        private void OnEnemyDefeated(Enemy enemy)
         {
-            enemy.Deactivate();
+            enemy.Defeated -= OnEnemyDefeated;
+            _activeEnemies.Remove(enemy);
+            EnemyDefeated.Invoke();
+        }
+
+        private void ClearActiveEnemies()
+        {
+            foreach (var enemy in _activeEnemies)
+                enemy.Defeated -= OnEnemyDefeated;
+            
+            _activeEnemies.Clear();
         }
     }
 
@@ -79,13 +88,13 @@ namespace Codebase.Infrastructure
     {
         public event Action EnemyDefeated = delegate { };
 
-        public void Start()
+        public void StartGameLoop()
         {
             _isRunning = true;
             _spawnEnemiesCoroutine = _runner.StartCoroutine(SpawnEnemiesAsync());
         }
 
-        public void Stop()
+        public void StopGameLoop()
         {
             _isRunning = false;
 
@@ -95,6 +104,7 @@ namespace Codebase.Infrastructure
 
         public void Reset()
         {
+            ClearActiveEnemies();
         }
     }
 
@@ -104,6 +114,8 @@ namespace Codebase.Infrastructure
         {
             if (_spawnEnemiesCoroutine != null)
                 _runner.StopCoroutine(_spawnEnemiesCoroutine);
+
+            ClearActiveEnemies();
         }
     }
 }

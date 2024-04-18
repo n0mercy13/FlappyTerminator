@@ -4,6 +4,8 @@ using VContainer;
 using VContainer.Unity;
 using Codebase.Logic;
 using Codebase.StaticData;
+using Codebase.View;
+using System.Collections.Generic;
 
 namespace Codebase.Infrastructure
 {
@@ -13,21 +15,27 @@ namespace Codebase.Infrastructure
         private readonly Player _playerPrefab;
         private readonly Enemy _enemyPrefab;
         private readonly Projectile _projectilePrefab;
+        private readonly ElementView[] _viewPrefabs;
         private readonly string _projectileParentName = "Projectiles";
         private readonly string _enemiesParentName = "Enemies";
         private Transform _projectileParent;
         private Transform _enemiesParent;
+        private RectTransform _viewRoot;
 
         public GameFactory(
             IObjectResolver container, 
             PlayerConfig playerConfig, 
             EnemyConfig enemyConfig,
-            ProjectileConfig projectileConfig)
+            ProjectileConfig projectileConfig,
+            ViewConfig viewConfig,
+            SceneData sceneData)
         {
             _container = container;
             _playerPrefab = playerConfig.Prefab;
             _enemyPrefab = enemyConfig.Prefab;
             _projectilePrefab = projectileConfig.Prefab;
+            _viewPrefabs = viewConfig.Prefabs;
+            _viewRoot = sceneData.ViewRoot;
         }
     }
 
@@ -62,6 +70,20 @@ namespace Codebase.Infrastructure
             }
 
             return poolItem;
+        }
+
+        public List<ElementView> CreateViews()
+        {
+            List<ElementView> views = new();
+            ElementView view;
+
+            foreach(ElementView prefab in _viewPrefabs)
+            {
+                view = _container.Instantiate(prefab, _viewRoot);
+                views.Add(view);
+            }
+
+            return views;
         }
     }
 }

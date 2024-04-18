@@ -15,7 +15,7 @@ namespace Codebase.Logic
         {
             Contract.Invariant(_value >= 0);
             Contract.Invariant(_value <= _maxValue);
-        }
+        } 
     }
 
     public partial class Energy : IEnergy

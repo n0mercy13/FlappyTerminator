@@ -2,7 +2,7 @@
 {
     public interface IManager : IResettable
     {
-        void Start();
-        void Stop();
+        void StartGameLoop();
+        void StopGameLoop();
     }
 }

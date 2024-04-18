@@ -12,6 +12,7 @@ namespace Codebase.Logic
         private IGamePool _gamePool;
         private Projectile _projectile;
         private bool _canShoot;
+        private bool _isInitialized;
 
         private Vector2 _shootDirection => transform.right;
 
@@ -20,18 +21,25 @@ namespace Codebase.Logic
         {
             _input = input;
             _gamePool = gamePool;
+            _isInitialized = true;
         }
 
         private void OnEnable()
         {
-            _canShoot = true;
-            _input.FirePressed += OnFirePressed;
+            if(_isInitialized)
+                SetUp();
         }
 
         private void OnDisable()
         {
             _canShoot = false;
             _input.FirePressed -= OnFirePressed;
+        }
+
+        private void SetUp()
+        {
+            _canShoot = true;
+            _input.FirePressed += OnFirePressed;
         }
 
         private void OnFirePressed()

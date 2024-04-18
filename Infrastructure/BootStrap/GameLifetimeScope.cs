@@ -39,10 +39,18 @@ namespace Codebase.Infrastructure
             builder
                 .RegisterInstance(_gameConfig.SpawnConfig);
             builder
+                .RegisterInstance(_gameConfig.ViewConfig);
+            builder
                 .Register<PlayerManager>(Lifetime.Singleton)
                 .AsImplementedInterfaces();
             builder
                 .Register<EnemyManager>(Lifetime.Singleton)
+                .AsImplementedInterfaces();
+            builder
+                .Register<ViewManager>(Lifetime.Singleton)
+                .AsImplementedInterfaces();
+            builder
+                .Register<GameManager>(Lifetime.Singleton)
                 .AsImplementedInterfaces();
             builder
                 .Register<GameFactory>(Lifetime.Singleton)

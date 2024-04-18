@@ -17,6 +17,7 @@ namespace Codebase.Logic
         private YieldInstruction _attackDelay;
         private Vector2 _topLeftCorner;
         private Vector2 _bottomLeftCorner;
+        private bool _isInitialized;
 
         [Inject]
         private void Construct(
@@ -31,6 +32,7 @@ namespace Codebase.Logic
             (Vector2 top, Vector2 bottom) = boundaryService.GetLeftSide();
             _topLeftCorner = top;
             _bottomLeftCorner = bottom;
+            _isInitialized = true;
         }
 
         private void OnValidate()
@@ -41,13 +43,19 @@ namespace Codebase.Logic
 
         private void OnEnable()
         {
-            _attackCoroutine = StartCoroutine(AttackAsync());
+            if(_isInitialized)
+                StartAttackAsync();
         }
 
         private void OnDisable()
         {
             if (_attackCoroutine != null)
                 StopCoroutine(_attackCoroutine);
+        }
+
+        private void StartAttackAsync()
+        {
+            _attackCoroutine = StartCoroutine(AttackAsync());
         }
 
         private IEnumerator AttackAsync()

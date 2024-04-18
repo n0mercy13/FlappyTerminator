@@ -10,6 +10,7 @@ namespace Codebase.StaticData
         [field: SerializeField] public EnemyConfig EnemyConfig { get; private set; }
         [field: SerializeField] public ProjectileConfig ProjectileConfig { get; private set; }
         [field: SerializeField] public SpawnConfig SpawnConfig { get; private set; }
+        [field: SerializeField] public ViewConfig ViewConfig { get; private set; }
 
         private void OnValidate()
         {
@@ -24,6 +25,9 @@ namespace Codebase.StaticData
 
             if (SpawnConfig == null)
                 throw new ArgumentNullException(nameof(SpawnConfig));
+
+            if(ViewConfig == null)
+                throw new ArgumentNullException(nameof(ViewConfig));
         }
     }
 }

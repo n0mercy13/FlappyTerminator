@@ -19,7 +19,7 @@ namespace Codebase.Infrastructure
             _maxEnergy = playerConfig.MaxEnergy;
         }
 
-        private void OnDead(IPoolable _)
+        private void OnDead()
         {
             Dead.Invoke();
         }
@@ -37,18 +37,32 @@ namespace Codebase.Infrastructure
                 player.SetMaxEnergy(_maxEnergy);
         }
 
-        public void Start()
+        public void StartGameLoop()
         {
             _player.Activate(_initialPosition);
-            _player.PoolReady += OnDead;
+
+            if (_player is Player player)
+                player.EnergyDepleted += OnDead;
         }
 
-        public void Stop()
+        public void StopGameLoop()
         {
-            _player.PoolReady -= OnDead;
-            _player.Deactivate();
-            _pool.Put<Player>(_player);
+            if (_player.IsActive())
+                _player.Deactivate();
+
+            if(_player is Player player)
+                player.EnergyDepleted -= OnDead;
+
             _player = null;
+        }
+    }
+
+    public partial class PlayerManager : IDisposable
+    {
+        public void Dispose()
+        {
+            if (_player is Player player)
+                player.EnergyDepleted -= OnDead;
         }
     }
 }

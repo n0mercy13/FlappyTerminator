@@ -11,11 +11,13 @@ namespace Codebase.Logic
 
         private readonly Vector2 _direction = Vector2.left;
         private float _speed;
+        private bool _isInitialized;
 
         [Inject]
         private void Construct(EnemyConfig config)
         {
             _speed = config.Speed;
+            _isInitialized = true;
         }
 
         private void OnValidate()
@@ -26,12 +28,18 @@ namespace Codebase.Logic
 
         private void OnEnable()
         {
-            _rigidbody.velocity = _direction * _speed;
+            if(_isInitialized)
+                StartMove();
         }
 
         private void OnDisable()
         {
             _rigidbody.velocity = Vector2.zero;
+        }
+
+        private void StartMove()
+        {
+            _rigidbody.velocity = _direction * _speed;
         }
     }
 }
