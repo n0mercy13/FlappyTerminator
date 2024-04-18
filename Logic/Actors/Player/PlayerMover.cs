@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using VContainer;
 using Codebase.Infrastructure;
 using Codebase.StaticData;
-using System.Collections;
 
 namespace Codebase.Logic
 {
-    public partial class PlayerMover : MonoBehaviour
+    public class PlayerMover : MonoBehaviour
     {
         [SerializeField] private Rigidbody2D _rigidbody;
 
@@ -44,7 +44,25 @@ namespace Codebase.Logic
             _boostDelay = new WaitForSeconds(config.BoostDelay);
         }
 
-        private void OnDisable() => Deactivate();
+        private void OnEnable()
+        {
+            _canBoost = true;
+            _isBoostActive = false;
+            StartGravity();
+
+            _gameplayInput.BoostPressed += OnBoostPressed;
+        }
+
+        private void OnDisable()
+        {
+            StopBoost();
+            StopGravity();
+
+            if (_boostRechargeCoroutine != null)
+                StopCoroutine(_boostRechargeCoroutine);
+
+            _gameplayInput.BoostPressed -= OnBoostPressed;
+        }
 
         private void OnBoostPressed()
         {
@@ -116,29 +134,6 @@ namespace Codebase.Logic
 
                 yield return null;
             }
-        }
-    }
-
-    public partial class PlayerMover : IPoolableComponent
-    {
-        public void Activate()
-        {
-            _canBoost = true;
-            _isBoostActive = false;
-            StartGravity();
-
-            _gameplayInput.BoostPressed += OnBoostPressed;
-        }
-
-        public void Deactivate()
-        {
-            StopBoost();
-            StopGravity();
-
-            if (_boostRechargeCoroutine != null)
-                StopCoroutine(_boostRechargeCoroutine);
-
-            _gameplayInput.BoostPressed -= OnBoostPressed;
         }
     }
 }

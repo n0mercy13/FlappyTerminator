@@ -3,11 +3,10 @@ using System.Collections;
 using UnityEngine;
 using VContainer;
 using Codebase.StaticData;
-using Codebase.Infrastructure;
 
 namespace Codebase.Logic
 {
-    public partial class PlayerRotator : MonoBehaviour
+    public class PlayerRotator : MonoBehaviour
     {
         [SerializeField] private PlayerMover _mover;
         [SerializeField] private Rigidbody2D _rigidBody;
@@ -37,7 +36,19 @@ namespace Codebase.Logic
                 throw new ArgumentNullException(nameof(_rigidBody));
         }
 
-        private void OnDisable() => Deactivate();
+        private void OnEnable()
+        {
+            _mover.Boosted += OnBoost;
+            _mover.BoostCompleted += OnBoostCompleted;
+        }
+
+        private void OnDisable()
+        {
+            StopRotation();
+
+            _mover.Boosted -= OnBoost;
+            _mover.BoostCompleted -= OnBoostCompleted;
+        }
 
         private void OnBoost()
         {
@@ -69,23 +80,6 @@ namespace Codebase.Logic
 
                 yield return null;
             }
-        }
-    }
-
-    public partial class PlayerRotator : IPoolableComponent
-    {
-        public void Activate()
-        {
-            _mover.Boosted += OnBoost;
-            _mover.BoostCompleted += OnBoostCompleted;
-        }
-
-        public void Deactivate()
-        {
-            StopRotation();
-
-            _mover.Boosted -= OnBoost;
-            _mover.BoostCompleted -= OnBoostCompleted;
         }
     }
 }

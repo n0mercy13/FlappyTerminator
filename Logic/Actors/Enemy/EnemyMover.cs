@@ -2,11 +2,10 @@
 using UnityEngine;
 using VContainer;
 using Codebase.StaticData;
-using Codebase.Infrastructure;
 
 namespace Codebase.Logic
 {
-    public partial class EnemyMover : MonoBehaviour
+    public class EnemyMover : MonoBehaviour
     {
         [SerializeField] private Rigidbody2D _rigidbody;
 
@@ -24,16 +23,13 @@ namespace Codebase.Logic
             if(_rigidbody == null)
                 throw new ArgumentNullException(nameof(_rigidbody));
         }
-    }
 
-    public partial class EnemyMover : IPoolableComponent
-    {
-        public void Activate()
+        private void OnEnable()
         {
             _rigidbody.velocity = _direction * _speed;
         }
 
-        public void Deactivate()
+        private void OnDisable()
         {
             _rigidbody.velocity = Vector2.zero;
         }

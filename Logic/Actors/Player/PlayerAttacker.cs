@@ -4,7 +4,7 @@ using Codebase.Infrastructure;
 
 namespace Codebase.Logic
 {
-    public partial class PlayerAttacker : MonoBehaviour
+    public class PlayerAttacker : MonoBehaviour
     {
         [SerializeField] private Transform _shootingPoint;
 
@@ -20,7 +20,18 @@ namespace Codebase.Logic
         {
             _input = input;
             _gamePool = gamePool;
+        }
 
+        private void OnEnable()
+        {
+            _canShoot = true;
+            _input.FirePressed += OnFirePressed;
+        }
+
+        private void OnDisable()
+        {
+            _canShoot = false;
+            _input.FirePressed -= OnFirePressed;
         }
 
         private void OnFirePressed()
@@ -34,22 +45,6 @@ namespace Codebase.Logic
             _projectile = _gamePool.Get<Projectile>();
             _projectile.Activate(_shootingPoint.position);
             _projectile.Shoot(_shootDirection);
-        }
-    }
-
-    public partial class PlayerAttacker : IPoolableComponent
-    {
-        public void Activate()
-        {
-            _canShoot = true;
-            _input.FirePressed += OnFirePressed;
-
-        }
-
-        public void Deactivate()
-        {
-            _canShoot = false;
-            _input.FirePressed -= OnFirePressed;
         }
     }
 }

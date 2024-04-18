@@ -3,7 +3,6 @@ using System.Collections;
 using UnityEngine;
 using Codebase.StaticData;
 using Codebase.Logic;
-using System.Collections.Generic;
 
 namespace Codebase.Infrastructure
 {
@@ -14,7 +13,6 @@ namespace Codebase.Infrastructure
         private readonly IRandomService _randomService;
         private readonly CoroutineRunner _runner;
         private readonly YieldInstruction _spawnDelay;
-        private readonly List<IPoolable> _activeEnemies;
         private Coroutine _spawnEnemiesCoroutine;
         private readonly int _maxEnergy;
         private bool _isRunning;
@@ -33,7 +31,6 @@ namespace Codebase.Infrastructure
             _randomService = randomService;
             _runner = sceneData.CoroutineRunner;
             _spawnDelay = new WaitForSeconds(spawnConfig.SpawnInterval);
-            _activeEnemies = new List<IPoolable>();
             _maxEnergy = enemyConfig.MaxEnergy;
         }
 
@@ -70,15 +67,11 @@ namespace Codebase.Infrastructure
         {
             enemy.SetMaxEnergy(_maxEnergy);
             enemy.Activate(spawnPosition);
-            _activeEnemies.Add(enemy);
-            enemy.PoolReady += OnPoolReady;
         }
 
         private void Deactivate(IPoolable enemy)
         {
             enemy.Deactivate();
-            _activeEnemies.Remove(enemy);
-            enemy.PoolReady -= OnPoolReady;
         }
     }
 
@@ -111,9 +104,6 @@ namespace Codebase.Infrastructure
         {
             if (_spawnEnemiesCoroutine != null)
                 _runner.StopCoroutine(_spawnEnemiesCoroutine);
-
-            foreach(IPoolable enemy in _activeEnemies)
-                enemy.PoolReady -= OnPoolReady;
         }
     }
 }

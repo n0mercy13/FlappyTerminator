@@ -44,15 +44,13 @@ namespace Codebase.Logic
         private void TargetHit(IDamageable damageable)
         {
             damageable.ApplyDamage(_damage);
-
-            PoolReady.Invoke(this);
             Deactivate();
         }
     }
 
     public partial class Projectile : IPoolable
     {
-        public event Action<IPoolable> PoolReady = delegate { };
+        public bool IsActive() => gameObject.activeSelf;
 
         public void Activate(Vector2 position)
         {

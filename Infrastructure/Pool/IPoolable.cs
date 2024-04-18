@@ -1,18 +1,11 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Codebase.Infrastructure
 {
     public interface IPoolable
     {
-        event Action<IPoolable> PoolReady;
+        bool IsActive();
         void Activate(Vector2 position);
-        void Deactivate();
-    }
-
-    public interface IPoolableComponent
-    {
-        void Activate();
         void Deactivate();
     }
 }

@@ -7,8 +7,7 @@ using Codebase.StaticData;
 
 namespace Codebase.Logic
 {
-
-    public partial class EnemyAttacker : MonoBehaviour
+    public class EnemyAttacker : MonoBehaviour
     {
         [SerializeField] private Transform _shootPoint;
 
@@ -18,7 +17,6 @@ namespace Codebase.Logic
         private YieldInstruction _attackDelay;
         private Vector2 _topLeftCorner;
         private Vector2 _bottomLeftCorner;
-        private bool _isActivated;
 
         [Inject]
         private void Construct(
@@ -41,14 +39,23 @@ namespace Codebase.Logic
                 throw new ArgumentNullException(nameof(_shootPoint));
         }
 
-        private void OnDisable() => Deactivate();
+        private void OnEnable()
+        {
+            _attackCoroutine = StartCoroutine(AttackAsync());
+        }
+
+        private void OnDisable()
+        {
+            if (_attackCoroutine != null)
+                StopCoroutine(_attackCoroutine);
+        }
 
         private IEnumerator AttackAsync()
         {
             Projectile projectile;
             Vector2 attackDirection = Vector2.zero;
 
-            while (_isActivated)
+            while (enabled)
             {
                 attackDirection = GetAttackDirection();
                 projectile = _gamePool.Get<Projectile>();
@@ -64,23 +71,6 @@ namespace Codebase.Logic
             Vector2 randomPositionOnLeftSide = _randomService.Range(_topLeftCorner, _bottomLeftCorner);
 
             return (randomPositionOnLeftSide - (Vector2)transform.position).normalized;
-        }
-    }
-
-    public partial class EnemyAttacker : IPoolableComponent
-    {
-        public void Activate()
-        {
-            _isActivated = true;
-            _attackCoroutine = StartCoroutine(AttackAsync());
-        }
-
-        public void Deactivate()
-        {
-            if (_attackCoroutine != null)
-                StopCoroutine(_attackCoroutine);
-
-            _isActivated = false;
         }
     }
 }
