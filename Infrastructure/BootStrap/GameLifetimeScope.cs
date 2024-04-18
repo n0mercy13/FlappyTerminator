@@ -4,6 +4,7 @@ using VContainer;
 using VContainer.Unity;
 using Codebase.StaticData;
 using Codebase.Logic;
+using Codebase.Infrastructure.Services;
 
 namespace Codebase.Infrastructure
 {
@@ -37,7 +38,9 @@ namespace Codebase.Infrastructure
                 .RegisterInstance(_gameConfig.ProjectileConfig);
             builder
                 .RegisterInstance(_gameConfig.SpawnConfig);
-            
+            builder
+                .Register<PlayerManager>(Lifetime.Singleton)
+                .AsImplementedInterfaces();
             builder
                 .Register<EnemyManager>(Lifetime.Singleton)
                 .AsImplementedInterfaces();
@@ -58,6 +61,9 @@ namespace Codebase.Infrastructure
                 .AsImplementedInterfaces();
             builder
                 .Register<RandomService>(Lifetime.Singleton)
+                .AsImplementedInterfaces();
+            builder
+                .Register<PauseService>(Lifetime.Singleton)
                 .AsImplementedInterfaces();
             builder
                 .Register<GameStateMachine>(Lifetime.Singleton)

@@ -5,6 +5,6 @@ namespace Codebase.Infrastructure
 {
     public interface IGameFactory
     {
-        IPoolItem Create<TObject>() where TObject : MonoBehaviour, IPoolItem;
+        IPoolable Create<TObject>() where TObject : MonoBehaviour, IPoolable;
     }
 }

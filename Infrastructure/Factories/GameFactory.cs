@@ -33,9 +33,9 @@ namespace Codebase.Infrastructure
 
     public partial class GameFactory : IGameFactory
     {
-        public IPoolItem Create<TObject>() where TObject : MonoBehaviour, IPoolItem
+        public IPoolable Create<TObject>() where TObject : MonoBehaviour, IPoolable
         {
-            IPoolItem poolItem;
+            IPoolable poolItem;
 
             if(typeof(TObject).Equals(typeof(Player)))
             {

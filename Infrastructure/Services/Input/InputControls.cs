@@ -62,23 +62,40 @@ namespace Codebase.Infrastructure
                 },
                 {
                     ""name"": """",
-                    ""id"": ""3601587f-19d3-469b-87e1-0a1989cbaf11"",
-                    ""path"": ""<Keyboard>/enter"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Keyboard&Mouse"",
-                    ""action"": ""Fire"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""b6624ec9-b2ef-4e42-83bb-baa27c1ed023"",
                     ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
                     ""action"": ""Fire"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""UI"",
+            ""id"": ""b842c082-64cd-4b77-ab1c-c0b315faaf29"",
+            ""actions"": [
+                {
+                    ""name"": ""Continue"",
+                    ""type"": ""Button"",
+                    ""id"": ""eb954eb8-a74c-426f-a5ef-8a49e22aab9d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""f01e5f59-c7a3-45b4-8641-5ca4a066e3b1"",
+                    ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Continue"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -108,6 +125,9 @@ namespace Codebase.Infrastructure
             m_Gameplay = asset.FindActionMap("Gameplay", throwIfNotFound: true);
             m_Gameplay_Boost = m_Gameplay.FindAction("Boost", throwIfNotFound: true);
             m_Gameplay_Fire = m_Gameplay.FindAction("Fire", throwIfNotFound: true);
+            // UI
+            m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
+            m_UI_Continue = m_UI.FindAction("Continue", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -219,6 +239,52 @@ namespace Codebase.Infrastructure
             }
         }
         public GameplayActions @Gameplay => new GameplayActions(this);
+
+        // UI
+        private readonly InputActionMap m_UI;
+        private List<IUIActions> m_UIActionsCallbackInterfaces = new List<IUIActions>();
+        private readonly InputAction m_UI_Continue;
+        public struct UIActions
+        {
+            private @InputControls m_Wrapper;
+            public UIActions(@InputControls wrapper) { m_Wrapper = wrapper; }
+            public InputAction @Continue => m_Wrapper.m_UI_Continue;
+            public InputActionMap Get() { return m_Wrapper.m_UI; }
+            public void Enable() { Get().Enable(); }
+            public void Disable() { Get().Disable(); }
+            public bool enabled => Get().enabled;
+            public static implicit operator InputActionMap(UIActions set) { return set.Get(); }
+            public void AddCallbacks(IUIActions instance)
+            {
+                if (instance == null || m_Wrapper.m_UIActionsCallbackInterfaces.Contains(instance)) return;
+                m_Wrapper.m_UIActionsCallbackInterfaces.Add(instance);
+                @Continue.started += instance.OnContinue;
+                @Continue.performed += instance.OnContinue;
+                @Continue.canceled += instance.OnContinue;
+            }
+
+            private void UnregisterCallbacks(IUIActions instance)
+            {
+                @Continue.started -= instance.OnContinue;
+                @Continue.performed -= instance.OnContinue;
+                @Continue.canceled -= instance.OnContinue;
+            }
+
+            public void RemoveCallbacks(IUIActions instance)
+            {
+                if (m_Wrapper.m_UIActionsCallbackInterfaces.Remove(instance))
+                    UnregisterCallbacks(instance);
+            }
+
+            public void SetCallbacks(IUIActions instance)
+            {
+                foreach (var item in m_Wrapper.m_UIActionsCallbackInterfaces)
+                    UnregisterCallbacks(item);
+                m_Wrapper.m_UIActionsCallbackInterfaces.Clear();
+                AddCallbacks(instance);
+            }
+        }
+        public UIActions @UI => new UIActions(this);
         private int m_KeyboardMouseSchemeIndex = -1;
         public InputControlScheme KeyboardMouseScheme
         {
@@ -232,6 +298,10 @@ namespace Codebase.Infrastructure
         {
             void OnBoost(InputAction.CallbackContext context);
             void OnFire(InputAction.CallbackContext context);
+        }
+        public interface IUIActions
+        {
+            void OnContinue(InputAction.CallbackContext context);
         }
     }
 }

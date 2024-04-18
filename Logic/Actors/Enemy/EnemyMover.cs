@@ -26,14 +26,14 @@ namespace Codebase.Logic
         }
     }
 
-    public partial class EnemyMover : IPoolItem
+    public partial class EnemyMover : IPoolableComponent
     {
-        public void Activate(Vector2 _)
+        public void Activate()
         {
             _rigidbody.velocity = _direction * _speed;
         }
 
-        void IPoolItem.Deactivate()
+        public void Deactivate()
         {
             _rigidbody.velocity = Vector2.zero;
         }

@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using Codebase.StaticData;
 using Codebase.Logic;
+using System.Collections.Generic;
 
 namespace Codebase.Infrastructure
 {
@@ -13,31 +14,39 @@ namespace Codebase.Infrastructure
         private readonly IRandomService _randomService;
         private readonly CoroutineRunner _runner;
         private readonly YieldInstruction _spawnDelay;
+        private readonly List<IPoolable> _activeEnemies;
         private Coroutine _spawnEnemiesCoroutine;
+        private readonly int _maxEnergy;
+        private bool _isRunning;
 
         public EnemyManager(
             IGamePool gameFactory,
             IBoundaryService boundaryService,
             IRandomService randomService,
             SceneData sceneData,
-            SpawnConfig config
+            SpawnConfig spawnConfig,
+            EnemyConfig enemyConfig
             )
         {
             _gamePool = gameFactory;
             _boundaryService = boundaryService;
             _randomService = randomService;
             _runner = sceneData.CoroutineRunner;
-            _spawnDelay = new WaitForSeconds(config.SpawnInterval);
+            _spawnDelay = new WaitForSeconds(spawnConfig.SpawnInterval);
+            _activeEnemies = new List<IPoolable>();
+            _maxEnergy = enemyConfig.MaxEnergy;
         }
 
         private IEnumerator SpawnEnemiesAsync()
         {
             Vector2 spawnPosition = Vector2.zero;
+            Enemy enemy;
 
-            while (true)
+            while (_isRunning)
             {
                 spawnPosition = GetSpawnPosition();
-                _gamePool.Get<Enemy>(spawnPosition);
+                enemy = _gamePool.Get<Enemy>();
+                Activate(enemy, spawnPosition);
 
                 yield return _spawnDelay;
             }
@@ -49,19 +58,50 @@ namespace Codebase.Infrastructure
 
             return _randomService.Range(point1, point2);
         }
+
+        private void OnPoolReady(IPoolable enemy)
+        {
+            Deactivate(enemy);
+            _gamePool.Put<Enemy>(enemy);
+            EnemyDefeated.Invoke();
+        }
+
+        private void Activate(Enemy enemy,  Vector2 spawnPosition)
+        {
+            enemy.SetMaxEnergy(_maxEnergy);
+            enemy.Activate(spawnPosition);
+            _activeEnemies.Add(enemy);
+            enemy.PoolReady += OnPoolReady;
+        }
+
+        private void Deactivate(IPoolable enemy)
+        {
+            enemy.Deactivate();
+            _activeEnemies.Remove(enemy);
+            enemy.PoolReady -= OnPoolReady;
+        }
     }
 
     public partial class EnemyManager : IEnemyManager
     {
-        public void StartSpawn()
+        public event Action EnemyDefeated = delegate { };
+
+        public void Start()
         {
+            _isRunning = true;
             _spawnEnemiesCoroutine = _runner.StartCoroutine(SpawnEnemiesAsync());
         }
 
-        public void StopSpawn()
+        public void Stop()
         {
+            _isRunning = false;
+
             if (_spawnEnemiesCoroutine != null)
                 _runner.StopCoroutine(_spawnEnemiesCoroutine);
+        }
+
+        public void Reset()
+        {
         }
     }
 
@@ -71,6 +111,9 @@ namespace Codebase.Infrastructure
         {
             if (_spawnEnemiesCoroutine != null)
                 _runner.StopCoroutine(_spawnEnemiesCoroutine);
+
+            foreach(IPoolable enemy in _activeEnemies)
+                enemy.PoolReady -= OnPoolReady;
         }
     }
 }

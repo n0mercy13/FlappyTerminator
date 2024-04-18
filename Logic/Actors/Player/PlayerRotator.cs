@@ -72,9 +72,9 @@ namespace Codebase.Logic
         }
     }
 
-    public partial class PlayerRotator : IPoolItem
+    public partial class PlayerRotator : IPoolableComponent
     {
-        public void Activate(Vector2 _)
+        public void Activate()
         {
             _mover.Boosted += OnBoost;
             _mover.BoostCompleted += OnBoostCompleted;

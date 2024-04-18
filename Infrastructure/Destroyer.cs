@@ -7,7 +7,7 @@ namespace Codebase.Infrastructure
     {
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            if(collision.gameObject.TryGetComponent(out IPoolItem poolItem))
+            if(collision.gameObject.TryGetComponent(out IPoolable poolItem))
                 poolItem.Deactivate();
         }
     }

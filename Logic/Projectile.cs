@@ -44,12 +44,16 @@ namespace Codebase.Logic
         private void TargetHit(IDamageable damageable)
         {
             damageable.ApplyDamage(_damage);
+
+            PoolReady.Invoke(this);
             Deactivate();
         }
     }
 
-    public partial class Projectile : IPoolItem
+    public partial class Projectile : IPoolable
     {
+        public event Action<IPoolable> PoolReady = delegate { };
+
         public void Activate(Vector2 position)
         {
             transform.position = position;
@@ -60,7 +64,6 @@ namespace Codebase.Logic
         {
             _rigidbody.velocity = Vector2.zero;
             gameObject.SetActive(false);
-            _gamePool.Put<Projectile>(this);
         }
     }
 }

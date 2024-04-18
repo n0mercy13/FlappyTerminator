@@ -1,14 +1,24 @@
-﻿namespace Codebase.Infrastructure
+﻿using System;
+using System.Collections.Generic;
+
+namespace Codebase.Infrastructure
 {
     public partial class GameLoopState
     {
         private readonly GameStateMachine _stateMachine;
-        private readonly IEnemyManager _enemyManager;
+        private readonly IPlayerManager _playerManager;
+        private readonly IReadOnlyList<IManager> _managers;
 
-        public GameLoopState(GameStateMachine stateMachine, IEnemyManager enemyManager)
+        public GameLoopState(GameStateMachine stateMachine, IPlayerManager playerManager, IReadOnlyList<IManager> manager)
         {
             _stateMachine = stateMachine;
-            _enemyManager = enemyManager;
+            _playerManager = playerManager;
+            _managers = manager;
+        }
+
+        private void OnPlayerDead()
+        {
+            _stateMachine.Enter<GameOverState>();
         }
     }
 
@@ -16,12 +26,26 @@
     {
         public void Enter()
         {
-            _enemyManager.StartSpawn();
+            foreach (IManager manager in _managers)
+                manager.Start();
+
+            _playerManager.Dead += OnPlayerDead;
         }
 
         public void Exit()
         {
-            _enemyManager.StopSpawn();
+            foreach(IManager manager in _managers)
+                manager.Stop();
+
+            _playerManager.Dead -= OnPlayerDead;
+        }
+    }
+
+    public partial class GameLoopState : IDisposable
+    {
+        public void Dispose()
+        {
+            _playerManager.Dead -= OnPlayerDead;
         }
     }
 }

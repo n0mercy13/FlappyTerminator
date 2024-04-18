@@ -14,6 +14,13 @@ namespace Codebase.Infrastructure
 
             _inputs.Gameplay.Boost.performed += OnBoostPerformed;
             _inputs.Gameplay.Fire.performed += OnFirePerformed;
+            _inputs.UI.Continue.performed += OnContinuePerformed;
+        }
+
+        private void OnContinuePerformed(InputAction.CallbackContext context)
+        {
+            if (context.phase.Equals(InputActionPhase.Performed))
+                ContinuePressed.Invoke();
         }
 
         private void OnBoostPerformed(InputAction.CallbackContext context)
@@ -35,12 +42,18 @@ namespace Codebase.Infrastructure
         public event Action FirePressed = delegate { };
     }
 
+    public partial class InputService : IUIInput
+    {
+        public event Action ContinuePressed = delegate { };
+    }
+
     public partial class InputService : IDisposable
     {
         public void Dispose()
         {
             _inputs.Gameplay.Boost.performed -= OnBoostPerformed;
             _inputs.Gameplay.Fire.performed -= OnFirePerformed;
+            _inputs.UI.Continue.performed -= OnContinuePerformed;
         }
     }
 }

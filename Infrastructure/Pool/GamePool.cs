@@ -7,34 +7,47 @@ namespace Codebase.Infrastructure
 {
     public partial class GamePool
     {
-        private readonly Dictionary<Type, Stack<IPoolItem>> _pool;
+        private readonly Dictionary<Type, Stack<IPoolable>> _pools;
         private readonly IGameFactory _gameFactory;
         private readonly int _initialProjectiles = 30;
         private readonly int _initialEnemies = 10;
+        private readonly int _initialPlayers = 1;
 
         public GamePool(IGameFactory gameFactory)
         {
-            _pool = new Dictionary<Type, Stack<IPoolItem>>();
+            _pools = new Dictionary<Type, Stack<IPoolable>>();
             _gameFactory = gameFactory;
+        }
+
+        private void Create<TObject>(int initialObjects) where TObject : MonoBehaviour, IPoolable
+        {
+            Stack<IPoolable> pool = new(initialObjects);
+
+            for (int i = 0; i < initialObjects; i++)
+            {
+                IPoolable poolable = _gameFactory.Create<TObject>();
+                poolable.Deactivate();
+                pool.Push(poolable);
+            }
+
+            _pools.Add(typeof(TObject), pool);
         }
     }
 
     public partial class GamePool : IGamePool
     {
-        public TObject Get<TObject>(Vector2 spawnPosition) where TObject : MonoBehaviour, IPoolItem
+        public TObject Get<TObject>() where TObject : MonoBehaviour, IPoolable
         {
-            if (_pool.TryGetValue(typeof(TObject), out Stack<IPoolItem> items) == false)
+            if (_pools.TryGetValue(typeof(TObject), out Stack<IPoolable> items) == false)
             {
                 throw new ArgumentOutOfRangeException(
                     $"Cannot find item type: {typeof(TObject)} it the pool");
             }
 
-            if (items.TryPop(out IPoolItem item) == false)
+            if (items.TryPop(out IPoolable item) == false)
             {
                 item = _gameFactory.Create<TObject>();
             }
-
-            item.Activate(spawnPosition);
 
             if(item is TObject poolable)
             {
@@ -46,9 +59,9 @@ namespace Codebase.Infrastructure
             }
         }
 
-        public void Put<TObject>(IPoolItem item) where TObject : MonoBehaviour, IPoolItem
+        public void Put<TObject>(IPoolable item) where TObject : MonoBehaviour, IPoolable
         {
-            if (_pool.TryGetValue(typeof(TObject), out Stack<IPoolItem> items))
+            if (_pools.TryGetValue(typeof(TObject), out Stack<IPoolable> items))
             {
                 items.Push(item);
             }
@@ -64,45 +77,19 @@ namespace Codebase.Infrastructure
     {
         public void Initialize()
         {
-            CreatePlayer();
-            CreateEnemies();
-            CreateProjectiles();
+            Create<Player>(_initialPlayers);
+            Create<Enemy>(_initialEnemies);
+            Create<Projectile>(_initialProjectiles);
         }
+    }
 
-        private void CreatePlayer()
+    public partial class GamePool : IResettable
+    {
+        public void Reset()
         {
-            Stack<IPoolItem> playerPool = new();
-            IPoolItem player = _gameFactory.Create<Player>();
-            playerPool.Push(player);
-            _pool.Add(typeof(Player), playerPool);
-        }
-
-        private void CreateEnemies()
-        {
-            Stack<IPoolItem> enemiesPool = new();
-            IPoolItem enemy;
-
-            for(int i = 0; i < _initialEnemies;  i++)
-            {
-                enemy = _gameFactory.Create<Enemy>();
-                enemiesPool.Push(enemy);
-            }
-
-            _pool.Add(typeof(Enemy), enemiesPool);  
-        }
-
-        private void CreateProjectiles()
-        {
-            Stack<IPoolItem> projectilesPool = new();
-            IPoolItem projectile;
-
-            for(int i =0; i < _initialProjectiles; i++)
-            {
-                projectile = _gameFactory.Create<Projectile>();
-                projectilesPool.Push(projectile);
-            }
-
-            _pool.Add(typeof(Projectile), projectilesPool);
+            foreach(Stack<IPoolable> pool in _pools.Values)
+                foreach(IPoolable poolable in pool)
+                    poolable.Deactivate();
         }
     }
 }

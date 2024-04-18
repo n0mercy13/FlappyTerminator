@@ -1,8 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using Codebase.Infrastructure;
-using System.Collections.Generic;
-using UnityEngine.UIElements;
 
 namespace Codebase.Logic
 {
@@ -27,19 +25,7 @@ namespace Codebase.Logic
             _energy = new Energy();
         }
 
-        private void OnEnable()
-        {
-            _energy.Depleted += OnEnergyDepleted;
-            _energy.Changed += OnEnergyChanged;
-        }
-
-        private void OnDisable()
-        {
-            _energy.Depleted -= OnEnergyDepleted;
-            _energy.Changed -= OnEnergyChanged;
-        }
-
-        protected void SetMaxEnergy(int maxHealth)
+        public void SetMaxEnergy(int maxHealth)
         {
             if (_energy is IInitializable<int> initializable)
                 initializable.Initialize(maxHealth);
@@ -48,7 +34,7 @@ namespace Codebase.Logic
         private void OnEnergyDepleted()
         {
             EnergyDepleted.Invoke();
-            Deactivate();
+            PoolReady.Invoke(this);
         }
 
         private void OnEnergyChanged(int energy, int maxEnergy) =>
@@ -63,8 +49,10 @@ namespace Codebase.Logic
         }
     }
 
-    public partial class Actor : IPoolItem
+    public partial class Actor : IPoolable
     {
+        public event Action<IPoolable> PoolReady = delegate { };
+
         public virtual void Activate(Vector2 position)
         {
             transform.position = position;
@@ -72,24 +60,30 @@ namespace Codebase.Logic
 
             for(int i = 0; i < _poolComponents.Length; i++)
             {
-                if (_poolComponents[i] is IPoolItem poolItem)
-                    poolItem.Activate(position);
+                if (_poolComponents[i] is IPoolableComponent component)
+                    component.Activate();
                 else
-                    throw new InvalidOperationException(nameof(poolItem));
+                    throw new InvalidOperationException(nameof(component));
             }
+
+            _energy.Depleted += OnEnergyDepleted;
+            _energy.Changed += OnEnergyChanged;
         }
 
         public virtual void Deactivate()
         {
+            gameObject.SetActive(false);
+
             for (int i = 0; i < _poolComponents.Length; i++)
             {
-                if (_poolComponents[i] is IPoolItem poolItem)
-                    poolItem.Deactivate();
+                if (_poolComponents[i] is IPoolableComponent component)
+                    component.Deactivate();
                 else
-                    throw new InvalidOperationException(nameof(poolItem));
+                    throw new InvalidOperationException(nameof(component));
             }
 
-            gameObject.SetActive(false);
+            _energy.Depleted -= OnEnergyDepleted;
+            _energy.Changed -= OnEnergyChanged;
         }
     }
 }

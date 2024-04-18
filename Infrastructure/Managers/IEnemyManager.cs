@@ -1,8 +1,9 @@
-﻿namespace Codebase.Infrastructure
+﻿using System;
+
+namespace Codebase.Infrastructure
 {
-    public interface IEnemyManager
+    public interface IEnemyManager : IManager
     {
-        void StartSpawn();
-        void StopSpawn();
+        event Action EnemyDefeated;
     }
 }

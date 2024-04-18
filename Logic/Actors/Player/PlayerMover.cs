@@ -119,9 +119,9 @@ namespace Codebase.Logic
         }
     }
 
-    public partial class PlayerMover : IPoolItem
+    public partial class PlayerMover : IPoolableComponent
     {
-        public void Activate(Vector2 _)
+        public void Activate()
         {
             _canBoost = true;
             _isBoostActive = false;

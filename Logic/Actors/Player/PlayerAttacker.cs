@@ -31,14 +31,15 @@ namespace Codebase.Logic
 
         private void Shoot()
         {
-            _projectile = _gamePool.Get<Projectile>(_shootingPoint.position);
+            _projectile = _gamePool.Get<Projectile>();
+            _projectile.Activate(_shootingPoint.position);
             _projectile.Shoot(_shootDirection);
         }
     }
 
-    public partial class PlayerAttacker : IPoolItem
+    public partial class PlayerAttacker : IPoolableComponent
     {
-        public void Activate(Vector2 _)
+        public void Activate()
         {
             _canShoot = true;
             _input.FirePressed += OnFirePressed;
