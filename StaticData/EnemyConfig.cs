@@ -11,5 +11,6 @@ namespace Codebase.StaticData
         [field: SerializeField, Range(0, 50)] public int MaxEnergy { get; private set; }
         [field: SerializeField, Range(0.0f, 10.0f)] public float Speed { get; private set; }
         [field: SerializeField, Range(0.0f, 10.0f)] public float RateOfFire { get; private set; }
+        [field: SerializeField, Range(0.0f, 10.0f)] public float ProjectileSpeed { get; private set; }
     }
 }

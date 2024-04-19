@@ -74,7 +74,8 @@ namespace Codebase.Infrastructure
         {
             CreatePool<Player>(_initialPlayers);
             CreatePool<Enemy>(_initialEnemies);
-            CreatePool<Projectile>(_initialProjectiles);
+            CreatePool<PlayerProjectile>(_initialProjectiles);
+            CreatePool<EnemyProjectile>(_initialProjectiles);
         }
     }
 

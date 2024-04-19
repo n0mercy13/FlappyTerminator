@@ -14,7 +14,8 @@ namespace Codebase.Infrastructure
         private readonly IObjectResolver _container;
         private readonly Player _playerPrefab;
         private readonly Enemy _enemyPrefab;
-        private readonly Projectile _projectilePrefab;
+        private readonly PlayerProjectile _playerProjectilePrefab;
+        private readonly EnemyProjectile _enemyProjectilePrefab;
         private readonly ElementView[] _viewPrefabs;
         private readonly string _projectileParentName = "Projectiles";
         private readonly string _enemiesParentName = "Enemies";
@@ -33,7 +34,8 @@ namespace Codebase.Infrastructure
             _container = container;
             _playerPrefab = playerConfig.Prefab;
             _enemyPrefab = enemyConfig.Prefab;
-            _projectilePrefab = projectileConfig.Prefab;
+            _playerProjectilePrefab = projectileConfig.PlayerProjectilePrefab;
+            _enemyProjectilePrefab = projectileConfig.EnemyProjectilePrefab;
             _viewPrefabs = viewConfig.Prefabs;
             _viewRoot = sceneData.ViewRoot;
         }
@@ -56,12 +58,19 @@ namespace Codebase.Infrastructure
 
                 poolItem = _container.Instantiate(_enemyPrefab, _enemiesParent);
             }
-            else if (typeof(TObject).Equals(typeof(Projectile)))
+            else if (typeof(TObject).Equals(typeof(PlayerProjectile)))
             {
-                if(_projectileParent == null)
+                if (_projectileParent == null)
                     _projectileParent = new GameObject(_projectileParentName).transform;
 
-                poolItem = _container.Instantiate(_projectilePrefab, _projectileParent);
+                poolItem = _container.Instantiate(_playerProjectilePrefab, _projectileParent);
+            }
+            else if (typeof(TObject).Equals(typeof(EnemyProjectile)))
+            {
+                if (_projectileParent == null)
+                    _projectileParent = new GameObject(_projectileParentName).transform;
+
+                poolItem = _container.Instantiate(_enemyProjectilePrefab, _projectileParent);
             }
             else
             {

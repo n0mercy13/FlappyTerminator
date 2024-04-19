@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using VContainer;
 using Codebase.Infrastructure;
+using Codebase.StaticData;
 
 namespace Codebase.Logic
 {
@@ -10,17 +11,19 @@ namespace Codebase.Logic
 
         private IGameplayInput _input;
         private IGamePool _gamePool;
-        private Projectile _projectile;
+        private PlayerProjectile _projectile;
+        private float _projectileSpeed;
         private bool _canShoot;
         private bool _isInitialized;
 
         private Vector2 _shootDirection => transform.right;
 
         [Inject]
-        private void Constructor(IGameplayInput input, IGamePool gamePool)
+        private void Constructor(IGameplayInput input, IGamePool gamePool, PlayerConfig playerConfig)
         {
             _input = input;
             _gamePool = gamePool;
+            _projectileSpeed = playerConfig.ProjectileSpeed;
             _isInitialized = true;
         }
 
@@ -50,9 +53,9 @@ namespace Codebase.Logic
 
         private void Shoot()
         {
-            _projectile = _gamePool.Get<Projectile>();
+            _projectile = _gamePool.Get<PlayerProjectile>();
             _projectile.Activate(_shootingPoint.position);
-            _projectile.Shoot(_shootDirection);
+            _projectile.Shoot(_shootDirection, _projectileSpeed);
         }
     }
 }

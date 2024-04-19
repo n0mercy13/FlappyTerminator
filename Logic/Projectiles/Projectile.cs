@@ -1,7 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using VContainer;
-using Codebase.StaticData;
 using Codebase.Infrastructure;
 
 namespace Codebase.Logic
@@ -11,17 +9,7 @@ namespace Codebase.Logic
     {
         [SerializeField] private Rigidbody2D _rigidbody;
 
-        private IGamePool _gamePool;
-        private float _speed;
-        private int _damage;
-
-        [Inject]
-        private void Construct(IGamePool gamePool, ProjectileConfig config)
-        { 
-            _gamePool = gamePool;
-            _speed = config.Speed;
-            _damage = config.Damage;
-        }
+        private readonly int _damage = 1;
 
         private void OnValidate()
         {
@@ -35,10 +23,10 @@ namespace Codebase.Logic
                 TargetHit(damageable);
         }
 
-        public void Shoot(Vector2 direction)
+        public void Shoot(Vector2 direction, float speed)
         {
             _rigidbody.transform.right = direction;
-            _rigidbody.velocity = _speed * direction;
+            _rigidbody.velocity = speed * direction;
         }
 
         private void TargetHit(IDamageable damageable)

@@ -11,27 +11,19 @@ namespace Codebase.Logic
     {
         [SerializeField] private Transform _shootPoint;
 
-        private IRandomService _randomService;
+        private readonly Vector2 _attackDirection = Vector2.left;
         private IGamePool _gamePool;
         private Coroutine _attackCoroutine;
         private YieldInstruction _attackDelay;
-        private Vector2 _topLeftCorner;
-        private Vector2 _bottomLeftCorner;
+        private float _projectileSpeed;
         private bool _isInitialized;
 
         [Inject]
-        private void Construct(
-            IRandomService randomService, 
-            IBoundaryService boundaryService, 
-            IGamePool gamePool, 
-            EnemyConfig config)
+        private void Construct(IGamePool gamePool, EnemyConfig config)
         {
-            _randomService = randomService;
             _gamePool = gamePool;
             _attackDelay = new WaitForSeconds(config.RateOfFire);
-            (Vector2 top, Vector2 bottom) = boundaryService.GetLeftSide();
-            _topLeftCorner = top;
-            _bottomLeftCorner = bottom;
+            _projectileSpeed = config.ProjectileSpeed;
             _isInitialized = true;
         }
 
@@ -60,25 +52,17 @@ namespace Codebase.Logic
 
         private IEnumerator AttackAsync()
         {
-            Projectile projectile;
+            EnemyProjectile projectile;
             Vector2 attackDirection = Vector2.zero;
 
             while (enabled)
             {
-                attackDirection = GetAttackDirection();
-                projectile = _gamePool.Get<Projectile>();
+                projectile = _gamePool.Get<EnemyProjectile>();
                 projectile.Activate(_shootPoint.position);
-                projectile.Shoot(attackDirection);
+                projectile.Shoot(_attackDirection, _projectileSpeed);
 
                 yield return _attackDelay;
             }
-        }
-
-        private Vector2 GetAttackDirection()
-        {
-            Vector2 randomPositionOnLeftSide = _randomService.Range(_topLeftCorner, _bottomLeftCorner);
-
-            return (randomPositionOnLeftSide - (Vector2)transform.position).normalized;
         }
     }
 }
